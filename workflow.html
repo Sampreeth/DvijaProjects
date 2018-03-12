@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Dvija Project Workflow</title>
+    <!-- CSS FILES !-->
+    <link href="style/tracker/progress-wizard.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.2.0/animate.min.css">
+    <link href="https://use.fontawesome.com/releases/v5.0.8/css/all.css" rel="stylesheet">
+    <link href="style/main/tooltip.css" rel="stylesheet">
+    <link href="style/main/main.css" rel="stylesheet">
+</head>
+<body>
+    <div id="mainWorkflow" class="mainWorkflow">
+        <h2>Project Workflow</h2>
+        <div id="workflow">
+            <div id="searchGroup">
+                <input type='text' id='psection' name='psection' placeholder='Please provide a heading here'/>
+                <button 
+                    onclick="addPage()" 
+                    data-tooltip="Add a new Section" 
+                    id="addSection">
+                    <i class="fas fa-plus-circle"></i>
+                </button>
+                <button 
+                    onclick="removePage()" 
+                    data-tooltip="Remove a section" 
+                    id="removeSection">
+                    <i class="fas fa-minus-circle"></i>
+                </button>
+                <button 
+                    onclick="saveAllofme()" 
+                    data-tooltip="Save all Changes" 
+                    id="savePage">
+                    <i class="far fa-save"></i>
+                </button>
+                <button 
+                    onclick="requestReview()" 
+                    data-tooltip="Request for Review" 
+                    id="reqReview" >
+                    <i class="fas fa-retweet"></i>
+                </button>
+                <button 
+                    onclick="ApproveReview()" 
+                    data-tooltip="Approve the Content for review" 
+                    id="AprvReview" >
+                    <i class="fas fa-check"></i>
+                </button>
+                <input data-tooltip="Get the document any format" type='button' id='finproject' name='finproject' value='Finish Project'/>
+            </div>
+            <div id="annotator"></div>
+            <div id="tracker">
+            </div>
+            <textarea cols='40' rows='10' id='myTextarea' name='myTextarea'>
+            </textarea>
+        </div>
+        <div id="review-section">
+            <div id="commentArea">
+                <h3>Brief Teacher s' Review </h3>
+                <textarea name="reviewbox" id="reviewbox"></textarea>
+            </div>
+        </div>
+    </div>
+    <div id="editPaperWindow" style="display:none; position:absolute; z-index:100; background:#fff; color:#000; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; border: 2px solid #ADADAD; width:400px; padding:6px; -webkit-box-shadow: 7px 7px 12px 0px rgba(168,168,168,0.37); -moz-box-shadow: 7px 7px 12px 0px rgba(168,168,168,0.37); box-shadow: 7px 7px 12px 0px rgba(168,168,168,0.37);"></div>
+    <div id="fullReport">
+        <textarea cols='0' rows='0' id='fullreport' name='fullreport'>
+        </textarea>
+    </div>
+    <!-- javascript files !-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="script/animatedmodal/animatedModal.min.js"></script>
+    <script src='script/tinymce/tinymce.min.js'></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="script/main/dbHandler.js"></script>
+    <script src="script/main/uiHandler.js"></script>
+    <script src="script/main/jsonHandler.js"></script>
+    <script src="script/main/dProject.js"></script>
+</body>
+</html>

@@ -1,0 +1,219 @@
+<?php
+require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once(dirname(__FILE__).'/lib.php');
+
+$id = optional_param('id', 0, PARAM_INT); // Course_module ID, or
+$n  = optional_param('n', 0, PARAM_INT);  // ... dproject instance ID - it should be named as the first character of the module.
+
+if ($id) {
+    $cm         = get_coursemodule_from_id('dproject', $id, 0, false, MUST_EXIST);
+    $course     = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+    $dproject  = $DB->get_record('dproject', array('id' => $cm->instance), '*', MUST_EXIST);
+} else if ($n) {
+    $dproject  = $DB->get_record('dproject', array('id' => $n), '*', MUST_EXIST);
+    $course     = $DB->get_record('course', array('id' => $dproject->course), '*', MUST_EXIST);
+    $cm         = get_coursemodule_from_instance('dproject', $dproject->id, $course->id, false, MUST_EXIST);
+} else {
+    error('You must specify a course_module ID or an instance ID');
+}
+
+require_login($course, true, $cm);
+
+$event = \mod_dproject\event\course_module_viewed::create(array(
+    'objectid' => $PAGE->cm->instance,
+    'context' => $PAGE->context,
+));
+$event->add_record_snapshot('course', $PAGE->course);
+$event->add_record_snapshot($PAGE->cm->modname, $dproject);
+$event->trigger();
+
+// Print the page header.
+$PAGE->set_url('/mod/dproject/view.php', array('id' => $cm->id));
+$PAGE->set_title(format_string($dproject->name));
+$PAGE->set_heading(format_string($course->fullname));
+
+
+// Output starts here.
+echo $OUTPUT->header();
+// check if new project or old project
+// if project table exist with course id.
+$stu=0;
+$table='records';
+$select=array('*');
+$where=array('courseid'=>$course->id);
+$result=isProjectNew($table,$course->id);
+
+//result check if new project
+$pj_table_data='';
+if($result==true){
+    $NewtrackerData='[
+        {
+            "status":"complete",
+            "title":"introduction",
+            "review":"",
+            "reviewStatus":"",
+            "data":"",
+            "lastAccessDate":""
+        },
+        {
+            "status":"disabled",
+            "title":"Literature survey",
+            "review":"",
+            "reviewStatus":"",
+            "data":"",
+            "lastAccessDate":""
+        },
+        {
+            "status":"disabled",
+            "title":"Software Requiment specifaction",
+            "review":"",
+            "reviewStatus":"",
+            "data":"",
+            "lastAccessDate":""
+        },
+        {
+            "status":"disabled",
+            "title":"System Design",
+            "review":"",
+            "reviewStatus":"",
+            "data":"",
+            "lastAccessDate":""
+        },
+        {
+            "status":"disabled",
+            "title":"Detailed Design",
+            "review":"",
+            "reviewStatus":"",
+            "data":"",
+            "lastAccessDate":""
+        },
+        {
+            "status":"disabled",
+            "title":"Implementation",
+            "review":"",
+            "reviewStatus":"",
+            "data":"",
+            "lastAccessDate":""
+        },
+        {
+            "status":"disabled",
+            "title":"Software Testing",
+            "review":"",
+            "reviewStatus":"",
+            "data":"",
+            "lastAccessDate":""
+        },
+        {
+            "status":"disabled",
+            "title":"Conclustion",
+            "review":"",
+            "reviewStatus":"",
+            "data":"",
+            "lastAccessDate":""
+        },
+        {
+            "status":"disabled",
+            "title":"Future Enhancment",
+            "review":"",
+            "reviewStatus":"",
+            "data":"",
+            "lastAccessDate":""
+        }
+        
+    ]';
+    //new project 
+    // echo "New Project";
+    $record=new stdClass();
+    $record->courseid=$course->id;
+    $record->data=$NewtrackerData;
+    $ProjectRID=createNewProject($table,$record);
+    $pj_table_data=getProject($table,$course->id);
+    $pj_table_data->data=json_decode($pj_table_data->data);
+    //finding wheather iam teacher / student
+    $stu=is_student($USER->id);
+}else{
+    //Loading the project to memory
+    // echo "existing project";
+    $pj_table_data=getProject($table,$course->id);
+    $pj_table_data->data=json_decode($pj_table_data->data);
+    //finding wheather iam teacher / student
+    $stu=is_student($USER->id);
+    //print_r($pj_table_data);
+    //echo "<br/>tableName: " .$table ." course id: " .$course->id;
+}
+?>
+<!-- CSS FILES !-->
+<link href="style/tracker/progress-wizard.min.css" rel="stylesheet">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/animate.css/3.2.0/animate.min.css">
+<link href="https://use.fontawesome.com/releases/v5.0.8/css/all.css" rel="stylesheet">
+<link href="style/main/tooltip.css" rel="stylesheet">
+<link href="style/main/main.css" rel="stylesheet">
+<div id="mainWorkflow" class="mainWorkflow">
+    <h2>Project Workflow</h2>
+    <div id="workflow">
+        <div id="searchGroup">
+            <input type='text' id='psection' name='psection' placeholder='Please provide a heading here'/>
+            <button 
+                onclick="addPage()" 
+                data-tooltip="Add a new Section" 
+                id="addSection">
+                <i class="fas fa-plus-circle"></i>
+            </button>
+            <button 
+                onclick="removePage()" 
+                data-tooltip="Remove a section" 
+                id="removeSection">
+                <i class="fas fa-minus-circle"></i>
+            </button>
+            <button 
+                onclick="saveAllofme()" 
+                data-tooltip="Save all Changes" 
+                id="savePage">
+                <i class="far fa-save"></i>
+            </button>
+            <button 
+                onclick="requestReview()" 
+                data-tooltip="Request for Review" 
+                id="reqReview" >
+                <i class="fas fa-retweet"></i>
+            </button>
+            <button 
+                onclick="ApproveReview()" 
+                data-tooltip="Approve the Content for review" 
+                id="AprvReview" >
+                <i class="fas fa-check"></i>
+            </button>
+            <input data-tooltip="Get the document any format" type='button' id='finproject' name='finproject' value='Finish Project'/>
+        </div>
+        <div id="annotator"></div>
+        <div id="tracker">
+        </div>
+        <textarea cols='40' rows='10' id='myTextarea' name='myTextarea'>
+        </textarea>
+    </div>
+    <div id="review-section">
+        <div id="commentArea">
+            <h3>Brief Teacher s' Review </h3>
+            <textarea name="reviewbox" id="reviewbox"></textarea>
+        </div>
+    </div>
+</div>
+<div id="editPaperWindow" style="display:none; position:absolute; z-index:100; background:#fff; color:#000; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; border: 2px solid #ADADAD; width:400px; padding:6px; -webkit-box-shadow: 7px 7px 12px 0px rgba(168,168,168,0.37); -moz-box-shadow: 7px 7px 12px 0px rgba(168,168,168,0.37); box-shadow: 7px 7px 12px 0px rgba(168,168,168,0.37);"></div>
+<div id="fullReport" style="">
+    <textarea cols='0' rows='0' id='fullreport' name='fullreport'>
+    </textarea>
+</div>
+<!-- javascript files !-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="script/animatedmodal/animatedModal.min.js"></script>
+<script src='script/tinymce/tinymce.min.js'></script>
+<script src="script/main/main.js"></script>
+<script>
+    let y=<?php echo $stu;?>;
+    let x=<?php print_r(json_encode($pj_table_data));?>;
+   decodeDBobject(x,y);
+</script>
+<iframe src="workflow.html"></iframe>
+<?php
+// Finish the page.
+echo $OUTPUT->footer();
